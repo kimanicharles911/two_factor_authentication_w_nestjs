@@ -4,10 +4,15 @@ import { User } from '../users/models/user.interface';
 import { JwtService } from '@nestjs/jwt';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
+import { SignUpCredentialsDto } from './dto/SignUpCredentials.dto';
 
 @Injectable()
 export class AuthenticationService {
   constructor(private usersService: UsersService, private jwtService: JwtService) {}
+
+  async signUp(signUpCredentialsDto: SignUpCredentialsDto): Promise<{ message: string }> {
+    return this.usersService.signUp(signUpCredentialsDto);
+  }
 
   async validateUser(email: string, password: string): Promise<Partial<User>> {
     const user = await this.usersService.findOne(email);
@@ -36,7 +41,7 @@ export class AuthenticationService {
   async generateTwoFactorAuthenticationSecret(user: User) {
     const secret = authenticator.generateSecret();
     const otpAuthUrl = authenticator.keyuri(user.email, 'AUTH_APP_NAME', secret);
-    await this.usersService.setTwoFactorAuthenticationSecret(secret, user.userId);
+    await this.usersService.setTwoFactorAuthenticationSecret(secret, user.id);
     return { secret, otpAuthUrl };
   }
 
