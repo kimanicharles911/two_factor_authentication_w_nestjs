@@ -45,3 +45,21 @@ https://codebeautify.org/base64-to-image-converter
 
 2fa/generate route - left out
 findOne user service implemented with username instead of email
+
+
+Auth w/ postgres
+
+1. Sign In
+http://localhost:3000/api/v1/auth/signin method: POST
+
+{
+  "email": "brian@test.com",
+  "password": "3$#c%3VviQL7"
+}
+
+
+Users credentials:
+{
+  "email": "mary@test.com",
+  "password": "C0Xr&0X*02JY"
+}

@@ -7,12 +7,11 @@ import { toDataURL } from 'qrcode';
 import { SignUpCredentialsDto } from './dto/SignUpCredentials.dto';
 import { SignInCredentialsDto } from './dto/SignInCredentials.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthenticationService {
-  constructor(@InjectRepository(UsersService) private usersService: UsersService, private jwtService: JwtService) {}
+  constructor(private usersService: UsersService, private jwtService: JwtService) {}
 
   async signUp(signUpCredentialsDto: SignUpCredentialsDto): Promise<{ message: string }> {
     return this.usersService.signUp(signUpCredentialsDto);
