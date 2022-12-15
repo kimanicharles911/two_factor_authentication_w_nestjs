@@ -40,7 +40,7 @@ export class UsersService {
   }
 
   async setTwoFactorAuthenticationSecret(secret: string, id: number) {
-    await this.repository.update(id, { twoFactorAuthenticationSecret: secret })
+    await this.repository.update(id, { twoFactorAuthenticationSecret: secret });
   }
 
   async turnOnTwoFactorAuthentication(id: number) {
