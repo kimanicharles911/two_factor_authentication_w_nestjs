@@ -49,13 +49,24 @@ findOne user service implemented with username instead of email
 
 Auth w/ postgres
 
-1. Sign In
+1. Sign Up
+http://localhost:3000/api/v1/auth/signup method: POST
+{
+  "email": "mary@test.com",
+  "password": "C0Xr&0X*02JY"
+}
+
+2. Sign In
 http://localhost:3000/api/v1/auth/signin method: POST
 
 {
   "email": "brian@test.com",
   "password": "3$#c%3VviQL7"
 }
+
+3. Generate QR Code base64 image string
+http://localhost:3000/api/v1/auth/2fa/generate
+Requires Bearer Token received in /auth/signin
 
 
 Users credentials:

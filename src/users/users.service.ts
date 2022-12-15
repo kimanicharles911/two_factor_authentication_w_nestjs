@@ -35,12 +35,12 @@ export class UsersService {
     return bcrypt.hash(password, salt);
   }
 
-  async findOne(email: string): Promise<IUser | undefined> {
-    return this.users.find((user) => user.email === email);
+  async findOne(email: string) {
+    return await this.repository.findOne({ where: { email } });
   }
 
   async setTwoFactorAuthenticationSecret(secret: string, id: number) {
-    this.users.find((user) => user.id === id).twoFactorAuthenticationSecret = secret;
+    await this.repository.update(id, { twoFactorAuthenticationSecret: secret })
   }
 
   async turnOnTwoFactorAuthentication(id: number) {
@@ -82,30 +82,3 @@ export class UsersService {
     await this.repository.update({ email }, { hashedRefreshToken });
   }
 }
-
-/* 
-async updateTodo(id: number, post: UpdateTodoDto) {
-  await this.todoRepository.update(id, post);
-  const updatedTodo = await this.todoRepository.findOne(id);
-  if (updatedTodo) {
-    return updatedTodo;
-  }
-
-  throw new HttpException('Todo not found', HttpStatus.NOT_FOUND);
-}
-
-======
-
-async function update(id: string, user: User): Promise<User> {
-    // Update
-    await userRepository.update(id, {
-      ...(user.name && { name: user.name }),
-      ...(user.surname && { surname: user.surname }),
-      ...(user.age && { age: user.age }),
-    });
-
-    // Return
-    return this.repository.findOneOrFail(id);
-  }
-
-*/
