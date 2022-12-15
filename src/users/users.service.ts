@@ -1,11 +1,17 @@
 import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { SignUpCredentialsDto } from 'src/authentication/dto/SignUpCredentials.dto';
+import { SignInCredentialsDto } from 'src/authentication/dto/SignInCredentials.dto';
 import { User as IUser } from './models/user.interface';
 import { User } from './models/user.entity';
+import { JwtPayload } from 'src/authentication/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class UsersService {
+  @InjectRepository(User)
+  private readonly repository: Repository<User>;
   private readonly users = [
     {
       id: 1,
@@ -58,4 +64,48 @@ export class UsersService {
       }
     }
   }
+
+  async validateUserPassword(signInCredentialsDto: SignInCredentialsDto): Promise<JwtPayload> {
+    const { email, password } = signInCredentialsDto;
+    const auth = await this.repository.findOne({ where: { email } });
+    if (auth && (await auth.validatePassword(password, auth.password))) {
+      return {
+        isTwoFactorAuthenticationEnabled: auth.isTwoFactorAuthenticationEnabled,
+        email: auth.email,
+      };
+    } else {
+      return null;
+    }
+  }
+
+  async update(email, hashedRefreshToken) {
+    await this.repository.update({ email }, { hashedRefreshToken });
+  }
 }
+
+/* 
+async updateTodo(id: number, post: UpdateTodoDto) {
+  await this.todoRepository.update(id, post);
+  const updatedTodo = await this.todoRepository.findOne(id);
+  if (updatedTodo) {
+    return updatedTodo;
+  }
+
+  throw new HttpException('Todo not found', HttpStatus.NOT_FOUND);
+}
+
+======
+
+async function update(id: string, user: User): Promise<User> {
+    // Update
+    await userRepository.update(id, {
+      ...(user.name && { name: user.name }),
+      ...(user.surname && { surname: user.surname }),
+      ...(user.age && { age: user.age }),
+    });
+
+    // Return
+    return this.repository.findOneOrFail(id);
+  }
+
+*/

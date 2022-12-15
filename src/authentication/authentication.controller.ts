@@ -15,6 +15,8 @@ import { LocalAuthGuard } from './local/local-auth.guard';
 import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { UsersService } from '../users/users.service';
 import { SignUpCredentialsDto } from './dto/SignUpCredentials.dto';
+import { SignInCredentialsDto } from './dto/SignInCredentials.dto';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Controller('auth')
 export class AuthenticationController {
@@ -23,6 +25,13 @@ export class AuthenticationController {
   @Post('/signup')
   async signUp(@Body(ValidationPipe) signUpCredentialsDto: SignUpCredentialsDto): Promise<{ message: string }> {
     return this.authenticationService.signUp(signUpCredentialsDto);
+  }
+
+  @Post('/signin')
+  async signin(
+    @Body(ValidationPipe) signInCredentialsDto: SignInCredentialsDto,
+  ): Promise<{ accessToken: string; refreshToken?: string; user?: JwtPayload }> {
+    return this.authenticationService.signIn(signInCredentialsDto);
   }
 
   @UseGuards(LocalAuthGuard)

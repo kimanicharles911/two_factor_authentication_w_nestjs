@@ -1,17 +1,73 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/models/user.interface';
 import { JwtService } from '@nestjs/jwt';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { SignUpCredentialsDto } from './dto/SignUpCredentials.dto';
+import { SignInCredentialsDto } from './dto/SignInCredentials.dto';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthenticationService {
-  constructor(private usersService: UsersService, private jwtService: JwtService) {}
+  constructor(@InjectRepository(UsersService) private usersService: UsersService, private jwtService: JwtService) {}
 
   async signUp(signUpCredentialsDto: SignUpCredentialsDto): Promise<{ message: string }> {
     return this.usersService.signUp(signUpCredentialsDto);
+  }
+
+  async getAccessToken(payload: JwtPayload) {
+    const accessToken = await this.jwtService.sign(payload, {
+      secret: 'secret',
+      expiresIn: '1d',
+    });
+    return accessToken;
+  }
+
+  async getRefreshToken(payload: JwtPayload) {
+    const refreshToken = await this.jwtService.sign(payload, {
+      secret: 'refresh_secret',
+      expiresIn: '1d',
+    });
+    return refreshToken;
+  }
+
+  async updateRefreshTokenInUser(refreshToken, email) {
+    if (refreshToken) {
+      refreshToken = await bcrypt.hash(refreshToken, 10);
+    }
+    /* await this.usersService.update(
+      { email },
+      {
+        hashedRefreshToken: refreshToken,
+      },
+    ); */
+    await this.usersService.update(email, refreshToken);
+  }
+
+  async signIn(
+    signInCredentialsDto: SignInCredentialsDto,
+  ): Promise<{ accessToken: string; refreshToken?: string; user?: JwtPayload }> {
+    const response = await this.usersService.validateUserPassword(signInCredentialsDto);
+    if (!response) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const accessToken = await this.getAccessToken(response);
+    if (response.isTwoFactorAuthenticationEnabled) {
+      return {
+        accessToken,
+      };
+    }
+
+    const refreshToken = await this.getRefreshToken(response);
+    await this.updateRefreshTokenInUser(refreshToken, response.email);
+    return {
+      accessToken,
+      refreshToken,
+      user: response,
+    };
   }
 
   async validateUser(email: string, password: string): Promise<Partial<User>> {
