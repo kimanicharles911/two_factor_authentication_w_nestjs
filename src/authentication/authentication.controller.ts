@@ -34,15 +34,6 @@ export class AuthenticationController {
     return this.authenticationService.signIn(signInCredentialsDto);
   }
 
-  @UseGuards(LocalAuthGuard)
-  @Post('login')
-  @HttpCode(200)
-  async login(@Request() req) {
-    const userWithoutPsw: Partial<User> = req.user;
-
-    return this.authenticationService.login(userWithoutPsw);
-  }
-
   @Post('2fa/generate')
   @UseGuards(JwtAuthGuard)
   async register(@Response() response, @Request() request) {
