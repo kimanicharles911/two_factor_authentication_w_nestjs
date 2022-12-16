@@ -49,7 +49,14 @@ findOne user service implemented with username instead of email
 
 Auth w/ postgres
 
-1. Sign In
+1. Sign Up
+http://localhost:3000/api/v1/auth/signup method: POST
+{
+  "email": "mary@test.com",
+  "password": "C0Xr&0X*02JY"
+}
+
+2. Sign In
 http://localhost:3000/api/v1/auth/signin method: POST
 
 {
@@ -57,9 +64,28 @@ http://localhost:3000/api/v1/auth/signin method: POST
   "password": "3$#c%3VviQL7"
 }
 
+3. Generate QR Code base64 image string
+http://localhost:3000/api/v1/auth/2fa/generate method: POST
+Requires Bearer Token received in /auth/signin
+
+4. Code Verification:
+http://localhost:3000/api/v1/auth/2fa/authenticate
+Requires Bearer Token used in /auth/2fa/generate
+Body:
+{
+  "twoFactorAuthenticationCode": "206554"
+}
+
+
 
 Users credentials:
 {
   "email": "mary@test.com",
   "password": "C0Xr&0X*02JY"
 }
+
+Postgres column data types:
+* https://devpress.csdn.net/postgresql/62f4da69c6770329307fa5b5.html
+* https://betterprogramming.pub/nest-js-project-with-typeorm-and-postgres-ce6b5afac3be
+
+ nest g co --flat --no-spec

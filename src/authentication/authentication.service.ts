@@ -37,13 +37,7 @@ export class AuthenticationService {
     if (refreshToken) {
       refreshToken = await bcrypt.hash(refreshToken, 10);
     }
-    /* await this.usersService.update(
-      { email },
-      {
-        hashedRefreshToken: refreshToken,
-      },
-    ); */
-    await this.usersService.update(email, refreshToken);
+    await this.usersService.updateRefreshToken(email, refreshToken);
   }
 
   async signIn(
@@ -105,8 +99,6 @@ export class AuthenticationService {
   }
 
   isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode: string, user: User) {
-    console.log(`twoFactorAuthenticationCode / `, twoFactorAuthenticationCode);
-    console.log(`user / `, user);
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,

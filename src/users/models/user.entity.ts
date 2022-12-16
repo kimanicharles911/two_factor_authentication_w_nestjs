@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 
@@ -9,6 +9,15 @@ export class User extends BaseEntity {
 
   @Column({ type: 'varchar' })
   email: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  first_name: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  last_name: string;
+
+  @Column({ type: 'numeric', nullable: true })
+  phone_number: number;
 
   @Column({ type: 'varchar' })
   password: string;

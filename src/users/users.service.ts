@@ -2,6 +2,8 @@ import { ConflictException, Injectable, InternalServerErrorException } from '@ne
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { from, Observable } from 'rxjs';
+import { UpdateResult } from 'typeorm';
 import { SignUpCredentialsDto } from 'src/authentication/dto/SignUpCredentials.dto';
 import { SignInCredentialsDto } from 'src/authentication/dto/SignInCredentials.dto';
 import { User as IUser } from './models/user.interface';
@@ -35,16 +37,30 @@ export class UsersService {
     return bcrypt.hash(password, salt);
   }
 
-  async findOne(email: string): Promise<IUser | undefined> {
-    return this.users.find((user) => user.email === email);
+  async findOne(email: string) {
+    return await this.repository.findOne({ where: { email } });
   }
 
   async setTwoFactorAuthenticationSecret(secret: string, id: number) {
-    this.users.find((user) => user.id === id).twoFactorAuthenticationSecret = secret;
+    await this.repository.update(id, { twoFactorAuthenticationSecret: secret });
   }
 
   async turnOnTwoFactorAuthentication(id: number) {
-    this.users.find((user) => user.id === id).isTwoFactorAuthenticationEnabled = true;
+    try {
+      await this.repository.update(id, { isTwoFactorAuthenticationEnabled: true });
+      return { message: `${id}'s two factor authentication enabled successfully` };
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async turnOffTwoFactorAuthentication(id: number) {
+    try {
+      await this.repository.update(id, { isTwoFactorAuthenticationEnabled: false });
+      return { message: `${id}'s two factor authentication disabled successfully` };
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 
   async signUp(signUpCredentialsDto: SignUpCredentialsDto): Promise<{ message: string }> {
@@ -78,34 +94,11 @@ export class UsersService {
     }
   }
 
-  async update(email, hashedRefreshToken) {
+  async updateRefreshToken(email, hashedRefreshToken) {
     await this.repository.update({ email }, { hashedRefreshToken });
   }
-}
 
-/* 
-async updateTodo(id: number, post: UpdateTodoDto) {
-  await this.todoRepository.update(id, post);
-  const updatedTodo = await this.todoRepository.findOne(id);
-  if (updatedTodo) {
-    return updatedTodo;
+  updateUserProfile(id, user): Observable<UpdateResult> {
+    return from(this.repository.update(id, user));
   }
-
-  throw new HttpException('Todo not found', HttpStatus.NOT_FOUND);
 }
-
-======
-
-async function update(id: string, user: User): Promise<User> {
-    // Update
-    await userRepository.update(id, {
-      ...(user.name && { name: user.name }),
-      ...(user.surname && { surname: user.surname }),
-      ...(user.age && { age: user.age }),
-    });
-
-    // Return
-    return this.repository.findOneOrFail(id);
-  }
-
-*/
