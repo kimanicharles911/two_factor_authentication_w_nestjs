@@ -2,6 +2,8 @@ import { ConflictException, Injectable, InternalServerErrorException } from '@ne
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { from, Observable } from 'rxjs';
+import { UpdateResult } from 'typeorm';
 import { SignUpCredentialsDto } from 'src/authentication/dto/SignUpCredentials.dto';
 import { SignInCredentialsDto } from 'src/authentication/dto/SignInCredentials.dto';
 import { User as IUser } from './models/user.interface';
@@ -44,7 +46,21 @@ export class UsersService {
   }
 
   async turnOnTwoFactorAuthentication(id: number) {
-    this.users.find((user) => user.id === id).isTwoFactorAuthenticationEnabled = true;
+    try {
+      await this.repository.update(id, { isTwoFactorAuthenticationEnabled: true });
+      return { message: `${id}'s two factor authentication enabled successfully` };
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async turnOffTwoFactorAuthentication(id: number) {
+    try {
+      await this.repository.update(id, { isTwoFactorAuthenticationEnabled: false });
+      return { message: `${id}'s two factor authentication disabled successfully` };
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 
   async signUp(signUpCredentialsDto: SignUpCredentialsDto): Promise<{ message: string }> {
@@ -78,7 +94,11 @@ export class UsersService {
     }
   }
 
-  async update(email, hashedRefreshToken) {
+  async updateRefreshToken(email, hashedRefreshToken) {
     await this.repository.update({ email }, { hashedRefreshToken });
+  }
+
+  updateUserProfile(id, user): Observable<UpdateResult> {
+    return from(this.repository.update(id, user));
   }
 }

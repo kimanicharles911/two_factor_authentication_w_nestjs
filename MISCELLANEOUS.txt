@@ -83,3 +83,9 @@ Users credentials:
   "email": "mary@test.com",
   "password": "C0Xr&0X*02JY"
 }
+
+Postgres column data types:
+* https://devpress.csdn.net/postgresql/62f4da69c6770329307fa5b5.html
+* https://betterprogramming.pub/nest-js-project-with-typeorm-and-postgres-ce6b5afac3be
+
+ nest g co --flat --no-spec

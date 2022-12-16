@@ -60,7 +60,20 @@ export class AuthenticationController {
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }
-    await this.usersService.turnOnTwoFactorAuthentication(request.user.id);
+    return await this.usersService.turnOnTwoFactorAuthentication(request.user.id);
+  }
+
+  @Post('2fa/turn-off')
+  @UseGuards(JwtAuthGuard)
+  async turnOffTwoFactorAuthentication(@Request() request, @Body() body) {
+    const isCodeValid = this.authenticationService.isTwoFactorAuthenticationCodeValid(
+      body.twoFactorAuthenticationCode,
+      request.user,
+    );
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Wrong authentication code');
+    }
+    return await this.usersService.turnOffTwoFactorAuthentication(request.user.id);
   }
 
   @Post('2fa/authenticate')
